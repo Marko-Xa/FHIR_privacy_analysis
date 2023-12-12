@@ -1,4 +1,3 @@
-import request_data
 import json_extract
 
 def anon_ss(data):
@@ -6,8 +5,6 @@ def anon_ss(data):
 
     This function extracts the patient ids in the response bundle and counts unique ids.
     """
-
-    #fhir_data = request_data.request_data()
     ids = []
     ids = json_extract.json_extract(data, "id")
     

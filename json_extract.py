@@ -20,7 +20,7 @@ def json_extract(obj, key):
             obj (dict or list): The current level of the nested JSON.
             key (str): The key to search for in the current level.
 
-        This function modifies the 'result' list.
+        This function modifies the result list.
         """
         if isinstance(obj, dict):
             # If the current object is a dictionary, iterate through its key-value pairs

@@ -7,6 +7,7 @@ def main():
     qi_list = ["birthDate", "gender", "postalCode"]
     k_anonymity.k_anonymity(data, qi_list)
     anon_ss.anon_ss(data)
+    print("Calculations done.")
     
 if __name__ == "__main__":
     main()

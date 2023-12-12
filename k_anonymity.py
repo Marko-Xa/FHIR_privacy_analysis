@@ -47,11 +47,11 @@ def k_anonymity(data, qi_list):
     print(record_counts)
     records_counts_list  = list(record_counts.values())
     print(records_counts_list)
-    k = ((min(records_counts_list))-1)
-    print(k)
+    k = ((min(records_counts_list)))
+    
+    print("k-anonymity:", k)
 
     return k
-    # Check if k-anonymity is satisfied (will depend from user input)
 
 
 
