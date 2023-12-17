@@ -1,60 +1,58 @@
 import json_extract
 
 def k_anonymity(data, qi_list):
-    """ Calculate k-anonymity with the extracted values, depends on selection of quasi identificators (keys).
-
-    This function extracts the specific quasi-identificators, which are selected by the user and creates a dictionary with them. 
-    Then the function calculates k-anonymity by counting the tuples of the values in the dictionary.
     """
-    
-    # Quasi-identifiers depend on user input
-    # Example of qi_list = ["birthDate", "gender", "postalCode"]
+    Calculate k-anonymity for a given dataset based on quasi-identifiers.
 
-    # Extract values from fhir_data with keys qi
+    Parameters:
+    - data (dict): The dataset, assumed to be in FHIR format.
+    - qi_list (list): List of quasi-identifiers (qi) for k-anonymity calculation.
+    - Quasi-identifiers depend on user selection in the streamlit dashboard 
+
+    Returns:
+    - k (int): The k-anonymity value for the dataset.
+
+    Example:
+    k_anonymity(fhir_data, ["birthDate", "gender", "postalCode"])
+    """
+
+    # Extract values from fhir_data with keys in qi_list
     qi_data = {}
-    for x in qi_list:
-            qi_data[x] = json_extract.json_extract(data, x)
-    # For testing
-    # print(qi_data)
-
-    # Create tuples of qi values
+    for qi_key in qi_list:
+        qi_data[qi_key] = json_extract.json_extract(data, qi_key)
+    # Create tuples that contain lists of the qi values
     qi_tuples = []
-
-    if 'gender' in qi_list:
-        qi_tuples.append(qi_data['gender'])
-
-    if 'birthDate' in qi_list:
-        qi_tuples.append(qi_data['birthDate'])
-
-    if 'postalCode' in qi_list:
-        qi_tuples.append(qi_data['postalCode'])
-
-    # Ensure there is at least one qi in qi_list
+    # Check for each quasi-identifier in qi_list and append its values to qi_tuples
+    for qi_key in qi_list:
+        if qi_key in qi_data:
+            qi_tuples.append(qi_data[qi_key])
+    # Ensure there is at least one quasi-identifier in qi_list
     if qi_tuples:
+        # Transpose the list of tuples to get a list of records
         qi_tuples = list(zip(*qi_tuples))
-
-    # For testing
-    # print(qi_tuples)
-
-
     # Count the frequency of each unique tuple (record)
     record_counts = {}
+    # Iterate through each record in qi_tuples
     for record in qi_tuples:
         if record in record_counts:
+            # If the record is already in the dictionary, increment its count
             record_counts[record] += 1
         else:
+            # If the record is not in the dictionary, add it with a count of 1
             record_counts[record] = 1
-    print(record_counts)
-    records_counts_list  = list(record_counts.values())
-    print(records_counts_list)
-    k = ((min(records_counts_list)))
-    
-    print("k-anonymity:", k)
 
+
+    # Convert the counts to a list for further analysis
+    records_counts_list = list(record_counts.values())
+    
+    # Calculate k-anonymity as the minimum frequency of a unique tuple
+    k = min(records_counts_list)
+    print("k-anonymity:", k)
     return k
 
 
-
-    
     # For testing
+    # print(qi_data)
     # print(qi_tuples)
+    # print(records_counts_list)
+    # print(record_counts)

@@ -89,16 +89,33 @@ def main():
                     res_ass = anon_ss.anon_ss(uploaded_file)
                     st.metric(label = "Anonymity set size", value = res_ass)                
                     st.info("The anonymity set for an individual u is the set of users that the adversary cannot distinguish from u. It can be seen as the size of the crowd into which the target u can blend. Thereby the size of the dataset can indicate the privacy level: If the dataset contains more records a target could be harder to identify than in a dataset with less records.")                    
-                    # Calculate privacy score                                        
-                    if res_k_anon > 10:
-                        k_score = 100
-                    if 0 < res_k_anon < 10:
-                        k_score = 50
-                    # Calculate privacy score                    
-                    if res_ass > 10:
-                        ass_score = 100
-                    if 0 < res_ass < 10:
-                        ass_score = 50
+                    # Calculate combined privacy score                                        
+                    if res_k_anon <= 5:
+                        k_score = 0
+                    elif res_k_anon == 6:
+                        k_score = 60
+                    elif res_k_anon == 7:
+                        k_score = 70
+                    elif res_k_anon == 8:
+                        k_score = 80
+                    elif res_k_anon <= 9:
+                        k_score = 90 
+                    else:
+                        k_score = 100    
+
+                    if res_ass <= 50:
+                        ass_score = 0
+                    elif res_ass <= 60:
+                        ass_score = 60
+                    elif res_ass <= 70:
+                        ass_score = 70
+                    elif res_ass <= 80:
+                        ass_score = 80
+                    elif res_ass <= 90:
+                        ass_score = 90 
+                    else:
+                        ass_score = 100    
+
                     score_combined = ((k_score + ass_score) / 2)
 
                     st.success("Privacy score successfully calculated.")
@@ -199,16 +216,32 @@ def main():
                     res_ass = anon_ss.anon_ss(data)
                     st.metric(label = "Anonymity set size", value = res_ass)                
                     st.info("The anonymity set for an individual u is the set of users that the adversary cannot distinguish from u. It can be seen as the size of the crowd into which the target u can blend. Thereby the size of the dataset can indicate the privacy level: If the dataset contains more records a target could be harder to identify than in a dataset with less records.")                    
-                    # User selected k-anonymity and anonymity set size                    
-                    if res_k_anon > 10:
-                        k_score = 100
-                    if 0 < res_k_anon <= 10:
-                        k_score = 50
+                    # Calculate combined privacy score                                        
+                    if res_k_anon <= 5:
+                        k_score = 0
+                    elif res_k_anon == 6:
+                        k_score = 60
+                    elif res_k_anon == 7:
+                        k_score = 70
+                    elif res_k_anon == 8:
+                        k_score = 80
+                    elif res_k_anon <= 9:
+                        k_score = 90 
+                    else:
+                        k_score = 100    
 
-                    if res_ass > 10:
-                        ass_score = 100
-                    if 0 < res_ass < 10:
-                        ass_score = 50
+                    if res_ass <= 50:
+                        ass_score = 0
+                    elif res_ass <= 60:
+                        ass_score = 60
+                    elif res_ass <= 70:
+                        ass_score = 70
+                    elif res_ass <= 80:
+                        ass_score = 80
+                    elif res_ass <= 90:
+                        ass_score = 90 
+                    else:
+                        ass_score = 100    
 
                     score_combined = ((k_score + ass_score) / 2)
 
@@ -229,3 +262,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+    

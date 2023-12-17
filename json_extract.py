@@ -1,44 +1,45 @@
-def json_extract(obj, key):
+def json_extract(data, key):
     """
-    Extract values from nested JSON by key.
+    Extract values from a FHIR Bundle for a specified key.
+
+    This function iterates through each record in the FHIR Bundle and extracts values associated with the specified key.
+    If the key is "postalCode," it navigates through nested structures to retrieve the postal code.
+    The extracted values are returned as a list.
 
     Parameters:
-        obj (dict or list): The nested JSON object to search.
-        key (str): The key to search for in the nested JSON.
+    - data (dict): The FHIR Bundle or dictionary containing patient records.
+    - key (str): The key for which values need to be extracted.
 
     Returns:
-        list: A list of values corresponding to the specified key.
+    - list: A list containing extracted values associated with the specified key.
     """
     # Initialize an empty list to store the extracted values
     result = []
 
-    def extract(obj, key):
-        """
-        Recursively traverse the nested JSON to extract values by key.
-
-        Parameters:
-            obj (dict or list): The current level of the nested JSON.
-            key (str): The key to search for in the current level.
-
-        This function modifies the result list.
-        """
-        if isinstance(obj, dict):
-            # If the current object is a dictionary, iterate through its key-value pairs
-            for k, v in obj.items():
-                if isinstance(v, (dict, list)):
-                    # If the value is a nested dictionary or list, recurse into it
-                    extract(v, key)
-                elif k == key:
-                    # If the key matches the desired key, append the corresponding value to 'result'
-                    result.append(v)
-        elif isinstance(obj, list):
-            # If the current object is a list, iterate through its items
-            for item in obj:
-                # Recurse into each item in the list
-                extract(item, key)
-
-    # Start the extraction process
-    extract(obj, key)
+    # Iterate through each record in the data dictionary (assuming it represents a FHIR Bundle)
+    for record in data.get("entry", []):  # Iterate through each record in the Bundle
+        # Check if the current record is a dictionary
+        if isinstance(record, dict):  # Check if record is a dictionary 
+            # Check if the key is "postalCode" (special handling for this key)
+            if key == "postalCode":
+                # Extract the value associated with the "postalCode" key from the nested structure
+        
+                # Navigate through the nested structure:
+                #   1. Get the "resource" dictionary from the current record
+                #   2. From the "resource" dictionary, get the "address" list (default to [{}] if not present)
+                #   3. Take the first element [0] from the "address" list (if it exists)
+                #   4. Finally, get the value associated with the "postalCode" key
+                result.append(record.get("resource", {}).get("address", [{}])[0].get(key))
+            else:
+                # For other keys, extract the value directly from the "resource" dictionary
+                
+                # Navigate through the nested structure:
+                #   1. Get the "resource" dictionary from the current record
+                #   2. Finally, get the value associated with the specified key
+                result.append(record.get("resource", {}).get(key))
     
-    # Return the final list of extracted values
+    # Return the list of extracted values
     return result
+
+    # For testing
+    # print(result)
