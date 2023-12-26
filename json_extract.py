@@ -37,7 +37,7 @@ def json_extract(data, key):
                 #   1. Get the "resource" dictionary from the current record
                 #   2. Finally, get the value associated with the specified key
                 result.append(record.get("resource", {}).get(key))
-    
+    print(result)
     # Return the list of extracted values
     return result
 

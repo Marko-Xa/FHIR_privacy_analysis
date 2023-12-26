@@ -3,6 +3,7 @@ import anon_ss
 import k_anonymity
 import request_data
 import json
+import privacyscore
 
 def main():
     st.set_page_config(
@@ -36,16 +37,15 @@ def main():
                 # User selects anonymity set size
                 if "k-anonymity" not in selected_metrics and "Anonymity set size" in selected_metrics:
                     res = anon_ss.anon_ss(json.load(uploaded_file))
+                    st.markdown("""---""")
                     st.success("Privacy metrics successfully applied.")
                     st.metric(label = "Anonymity set size", value = res)                
                     st.info("The anonymity set for an individual u is the set of users that the adversary cannot distinguish from u. It can be seen as the size of the crowd into which the target u can blend. Thereby the size of the dataset can indicate the privacy level: If the dataset contains more records a target could be harder to identify than in a dataset with less records.")                    
                     # Calculate privacy score                    
-                    if res > 1000:
-                        score = 100
-                    if 0 < res < 1000:
-                        score = 50
+                    score = privacyscore.anon_ss_score(res)                    
+                    st.markdown("""---""")
                     st.success("Privacy score successfully calculated")
-                    st.metric(label = "Privacy Score", value = score)    
+                    st.metric(label = "Privacy Score", help = "Min: 0, Max: 100, general advice: If < 60, its recommended to use (widely available) anonymization methods to ensure a higher degree of anonymity for the data set", value = score)    
                     st.info('''
                             To improve the privacy score consider the following anonymization techniques:\n                          
                             Data Aggregation: Combine data into summary statistics or categories, instead of individual records.\n
@@ -59,16 +59,15 @@ def main():
                         st.warning("Please choose quasi identifiers for k-anonymity metric.")
                     qi_list = selected_params
                     res = k_anonymity.k_anonymity(json.load(uploaded_file), qi_list)
+                    st.markdown("""---""")
                     st.success("Privacy metrics successfully applied.")                
                     st.metric(label = "k-anonymity", value = res)
                     st.info("K-anonymity is a property of a dataset that indicates the re-identifiability of its records. A dataset is k-anonymous if quasi-identifiers for each person in the dataset are identical to at least k – 1 other people in the dataset.  Higher k means in general higher privacy.")                    
-                    # Calculate privacy score                    
-                    if res > 10:
-                        score = 100
-                    if 0 < res < 10:
-                        score = 50
+                    # Calculate privacy score
+                    score = privacyscore.k_anonymity_score(res)                    
+                    st.markdown("""---""")
                     st.success("Privacy score successfully calculated")
-                    st.metric(label = "Privacy Score", value = score)    
+                    st.metric(label = "Privacy Score", help = "Min: 0, Max: 100, general advice: If < 60, its recommended to use (widely available) anonymization methods to ensure a higher degree of anonymity for the data set", value = score)    
                     st.info('''
                             To improve the privacy score consider the following anonymization techniques:\n                          
                             Data Aggregation: Combine data into summary statistics or categories, instead of individual records.\n
@@ -81,45 +80,22 @@ def main():
                     if not selected_params:
                         st.warning("Please choose quasi identifiers for k-anonymity metric.")
                     qi_list = selected_params
-                    res_k_anon = k_anonymity.k_anonymity(json.load(uploaded_file), qi_list)
+                    uploaded_file_json  = json.load(uploaded_file)
+                    res_k_anon = k_anonymity.k_anonymity(uploaded_file_json, qi_list)
+                    st.markdown("""---""")
                     st.success("Privacy metrics successfully applied.")
                     st.metric(label = "k-anonymity", value = res_k_anon)
                     st.info("K-anonymity is a property of a dataset that indicates the re-identifiability of its records. A dataset is k-anonymous if quasi-identifiers for each person in the dataset are identical to at least k – 1 other people in the dataset.  Higher k means in general higher privacy.")                    
-                    
-                    res_ass = anon_ss.anon_ss(uploaded_file)
+                    res_ass = anon_ss.anon_ss(uploaded_file_json)
                     st.metric(label = "Anonymity set size", value = res_ass)                
                     st.info("The anonymity set for an individual u is the set of users that the adversary cannot distinguish from u. It can be seen as the size of the crowd into which the target u can blend. Thereby the size of the dataset can indicate the privacy level: If the dataset contains more records a target could be harder to identify than in a dataset with less records.")                    
-                    # Calculate combined privacy score                                        
-                    if res_k_anon <= 5:
-                        k_score = 0
-                    elif res_k_anon == 6:
-                        k_score = 60
-                    elif res_k_anon == 7:
-                        k_score = 70
-                    elif res_k_anon == 8:
-                        k_score = 80
-                    elif res_k_anon <= 9:
-                        k_score = 90 
-                    else:
-                        k_score = 100    
-
-                    if res_ass <= 50:
-                        ass_score = 0
-                    elif res_ass <= 60:
-                        ass_score = 60
-                    elif res_ass <= 70:
-                        ass_score = 70
-                    elif res_ass <= 80:
-                        ass_score = 80
-                    elif res_ass <= 90:
-                        ass_score = 90 
-                    else:
-                        ass_score = 100    
-
-                    score_combined = ((k_score + ass_score) / 2)
-
+                    # Calculate combined privacy score
+                    kscore = privacyscore.k_anonymity_score(res_k_anon)
+                    ass_score = privacyscore.anon_ss_score(res_ass)
+                    score_combined = privacyscore.combined_score(kscore, ass_score)
+                    st.markdown("""---""")
                     st.success("Privacy score successfully calculated.")
-                    st.metric(label = "Privacy Score", value = (score_combined))    
+                    st.metric(label = "Privacy Score", help = "Min: 0, Max: 100, general advice: If < 60, its recommended to use (widely available) anonymization methods to ensure a higher degree of anonymity for the data set", value = (score_combined))    
                     st.info('''
                             To improve the privacy score consider the following anonymization techniques:\n                          
                             Data Aggregation: Combine data into summary statistics or categories, instead of individual records.\n
@@ -156,20 +132,19 @@ def main():
         if st.button("Evaluate privacy"):
             if server_url:
 
-                # User selected anonymity set size                    
+                # User selects anonymity set size                    
                 if "k-anonymity" not in selected_metrics and "Anonymity set size" in selected_metrics:
                     data = request_data.request_data(server_url)
                     res = anon_ss.anon_ss(data)
+                    st.markdown("""---""")
                     st.success("Privacy metrics successfully applied.")
                     st.metric(label = "Anonymity set size", value = res)                
                     st.info("The anonymity set for an individual u is the set of users that the adversary cannot distinguish from u. It can be seen as the size of the crowd into which the target u can blend. Thereby the size of the dataset can indicate the privacy level: If the dataset contains more records a target could be harder to identify than in a dataset with less records.")                    
                     # Calculate privacy score                                                            
-                    if res > 1000:
-                        score = 100
-                    if 0 < res < 1000:
-                        score = 50
+                    score = privacyscore.anon_ss_score(res)
+                    st.markdown("""---""")
                     st.success("Privacy score successfully calculated")
-                    st.metric(label = "Privacy Score", value = score)    
+                    st.metric(label = "Privacy Score", help = "Min: 0, Max: 100, general advice: If < 60, its recommended to use (widely available) anonymization methods to ensure a higher degree of anonymity for the data set", value = score)    
                     st.info('''
                             To improve the privacy score consider the following anonymization techniques:\n                          
                             Data Aggregation: Combine data into summary statistics or categories, instead of individual records.\n
@@ -184,16 +159,15 @@ def main():
                     data = request_data.request_data(server_url)
                     qi_list = selected_params
                     res = k_anonymity.k_anonymity(data, qi_list)
+                    st.markdown("""---""")
                     st.success("Privacy metrics successfully applied.")                
                     st.metric(label = "k-anonymity", value = res)
                     st.info("K-anonymity is a property of a dataset that indicates the re-identifiability of its records. A dataset is k-anonymous if quasi-identifiers for each person in the dataset are identical to at least k – 1 other people in the dataset.  Higher k means in general higher privacy.")                    
                     # Calculate privacy score                                                            
-                    if res > 10:
-                        score = 100
-                    if 0 < res <= 10:
-                        score = 50
+                    score = privacyscore.k_anonymity_score(res)                    
+                    st.markdown("""---""")
                     st.success("Privacy score successfully calculated")
-                    st.metric(label = "Privacy Score", value = score)    
+                    st.metric(label = "Privacy Score", help = "Min: 0, Max: 100, general advice: If < 60, its recommended to use (widely available) anonymization methods to ensure a higher degree of anonymity for the data set", value = score)    
                     st.info('''
                             To improve the privacy score consider the following anonymization techniques:\n                          
                             Data Aggregation: Combine data into summary statistics or categories, instead of individual records.\n
@@ -208,45 +182,20 @@ def main():
                     data = request_data.request_data(server_url)
                     qi_list = selected_params
                     res_k_anon = k_anonymity.k_anonymity(data, qi_list)
+                    st.markdown("""---""")
                     st.success("Privacy metrics successfully applied.")
-
                     st.metric(label = "k-anonymity", value = res_k_anon)
                     st.info("K-anonymity is a property of a dataset that indicates the re-identifiability of its records. A dataset is k-anonymous if quasi-identifiers for each person in the dataset are identical to at least k – 1 other people in the dataset.  Higher k means in general higher privacy.")                    
-                    
                     res_ass = anon_ss.anon_ss(data)
                     st.metric(label = "Anonymity set size", value = res_ass)                
                     st.info("The anonymity set for an individual u is the set of users that the adversary cannot distinguish from u. It can be seen as the size of the crowd into which the target u can blend. Thereby the size of the dataset can indicate the privacy level: If the dataset contains more records a target could be harder to identify than in a dataset with less records.")                    
                     # Calculate combined privacy score                                        
-                    if res_k_anon <= 5:
-                        k_score = 0
-                    elif res_k_anon == 6:
-                        k_score = 60
-                    elif res_k_anon == 7:
-                        k_score = 70
-                    elif res_k_anon == 8:
-                        k_score = 80
-                    elif res_k_anon <= 9:
-                        k_score = 90 
-                    else:
-                        k_score = 100    
-
-                    if res_ass <= 50:
-                        ass_score = 0
-                    elif res_ass <= 60:
-                        ass_score = 60
-                    elif res_ass <= 70:
-                        ass_score = 70
-                    elif res_ass <= 80:
-                        ass_score = 80
-                    elif res_ass <= 90:
-                        ass_score = 90 
-                    else:
-                        ass_score = 100    
-
-                    score_combined = ((k_score + ass_score) / 2)
-
+                    kscore = privacyscore.k_anonymity_score(res_k_anon)
+                    ass_score = privacyscore.anon_ss_score(res_ass)
+                    score_combined = privacyscore.combined_score(kscore, ass_score)
+                    st.markdown("""---""")
                     st.success("Privacy score successfully calculated.")
-                    st.metric(label = "Privacy Score", value = (score_combined))    
+                    st.metric(label = "Privacy Score", help = "Min: 0, Max: 100, general advice: If < 60, its recommended to use (widely available) anonymization methods to ensure a higher degree of anonymity for the data set", value = (score_combined))    
                     st.info('''
                             To improve the privacy score consider the following anonymization techniques:\n                          
                             Data Aggregation: Combine data into summary statistics or categories, instead of individual records.\n

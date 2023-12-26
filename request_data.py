@@ -18,12 +18,12 @@ def request_data(server_url):
     fhir_data = request_data("http://hapi.fhir.org/baseR4")
     """
     # Server URL will depend on user input - see module streamlit_app.py
-    # Example server_url = "http://hapi.fhir.org/baseR4"
+    # Examples server_url = "http://hapi.fhir.org/baseR5, https://mii-agiop-3p.life.uni-leipzig.de/fhir, https://server.fire.ly/r4"
  
     # Resource Type could be modified, but here patient is used for evaluation of the metrics
     resource_type = "Patient"
     
-    response = requests.get(f"{server_url}/{resource_type}?gender:missing=false&birthdate:missing=false&address-postalcode:missing=false")
+    response = requests.get(f"{server_url}/{resource_type}?gender:missing=false&birthdate:missing=false&address-postalcode:missing=false&_count=200")
 
     if response.status_code == 200:
         # Successful request
